@@ -40,5 +40,16 @@ jobs:
       - name: Build
         run: cargo build --release --workspace
 
+      - name: Generate schema
+        run: ./target/release/hyprland-preview-share-picker schema > schema.json
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyprland-preview-share-picker-${{ github.sha }}
+          path: |
+            target/release/hyprland-preview-share-picker
+            schema.json
+
       - name: Run clippy
         run: cargo clippy --workspace -- -D warnings
