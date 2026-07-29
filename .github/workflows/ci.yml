@@ -11,32 +11,37 @@ env:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    container:
+      image: archlinux/archlinux:latest
     steps:
+      - name: Install system dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            gtk4 \
+            gtk4-layer-shell \
+            wayland \
+            libxkbcommon \
+            glib2 \
+            pango \
+            cairo \
+            gdk-pixbuf2 \
+            atk \
+            epoxy \
+            meson \
+            ninja \
+            git \
+            rustup
+
+      - name: Install Rust nightly
+        run: |
+          rustup default nightly
+          rustup component add rustfmt clippy
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-4-dev \
-            libgtk-4-layer-shell-dev \
-            libwayland-dev \
-            libxkbcommon-dev \
-            libglib2.0-dev \
-            libpango1.0-dev \
-            libcairo2-dev \
-            libgdk-pixbuf-2.0-dev \
-            libatk1.0-dev \
-            meson \
-            ninja-build
-
-      - name: Install Rust toolchain (nightly)
-        run: |
-          rustup toolchain install nightly --component rustfmt --component clippy
-          rustup default nightly
 
       - name: Check formatting
         run: cargo fmt --check
