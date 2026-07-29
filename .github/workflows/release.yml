@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build and release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libgtk-4-layer-shell-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            libglib2.0-dev \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libgdk-pixbuf-2.0-dev \
+            libatk1.0-dev \
+            meson \
+            ninja-build
+
+      - name: Install Rust toolchain (nightly)
+        run: |
+          rustup toolchain install nightly
+          rustup default nightly
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Generate schema
+        run: ./target/release/hyprland-preview-share-picker schema > schema.json
+
+      - name: Create release archive
+        run: |
+          mkdir -p release-artifacts
+          cp target/release/hyprland-preview-share-picker release-artifacts/
+          cp schema.json release-artifacts/
+          cd release-artifacts
+          tar czf ../hyprland-preview-share-picker-${{ github.ref_name }}-x86_64-linux.tar.gz \
+            hyprland-preview-share-picker schema.json
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            hyprland-preview-share-picker-${{ github.ref_name }}-x86_64-linux.tar.gz
