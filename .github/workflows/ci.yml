@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libgtk-4-layer-shell-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            libglib2.0-dev \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libgdk-pixbuf-2.0-dev \
+            libatk1.0-dev \
+            meson \
+            ninja-build
+
+      - name: Install Rust toolchain (nightly)
+        run: |
+          rustup toolchain install nightly --component rustfmt --component clippy
+          rustup default nightly
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Build
+        run: cargo build --release --workspace
+
+      - name: Run clippy
+        run: cargo clippy --workspace -- -D warnings
