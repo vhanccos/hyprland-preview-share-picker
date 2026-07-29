@@ -17,19 +17,10 @@ jobs:
       - name: Install system dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm \
+          pacman -S --noconfirm --needed \
             gtk4 \
             gtk4-layer-shell \
-            wayland \
-            libxkbcommon \
-            glib2 \
-            pango \
-            cairo \
-            gdk-pixbuf2 \
-            atk \
-            epoxy \
-            meson \
-            ninja \
+            base-devel \
             git \
             rustup
 
