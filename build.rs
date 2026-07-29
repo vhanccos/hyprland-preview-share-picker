@@ -10,7 +10,7 @@ fn main() {
                     let split = trimmed.split('-').collect::<Vec<_>>();
                     if split.len() >= 3 {
                         let tag =
-                            if split[0].starts_with('v') || split[0].starts_with('V') { &split[0][1..] } else { &split[0] };
+                            if split[0].starts_with('v') || split[0].starts_with('V') { &split[0][1..] } else { split[0] };
                         format!("{}-r{}-{}", tag, split[1], split[2])
                     } else {
                         println!("cargo::warning=Unexpected git describe output: {trimmed}");
